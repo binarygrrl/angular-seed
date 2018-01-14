@@ -1,43 +1,179 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html lang="en" ng-app="myApp" class="no-js"> <!--<![endif]-->
+<html lang="en-US">
+
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>My AngularJS App</title>
-  <meta name="description" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
-  <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
-  <link rel="stylesheet" href="app.css">
-  <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>My AngularJS App</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--Included in Angular Seed-->
+    <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
+    <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
+    <link rel="stylesheet" href="app.css">
+    <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
+
+    <!--Specific to Scraper-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 </head>
+
 <body>
-  <ul class="menu">
-    <li><a href="#!/view1">view1</a></li>
-    <li><a href="#!/view2">view2</a></li>
-  </ul>
+    <div class="container" id="main" ng-app="ScrapeApp" ng-controller="ScrapeCtrl">
+        <h1 align="center">Data Scrape</h1>
+        <h6 align="center">Examples: {{examples}}</h6>
 
-  <!--[if lt IE 7]>
-      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-  <![endif]-->
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-7">
+                    <!--<div class="container-fluid">-->
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <input type="text" class="form-control" placeholder="url" ng-model="url">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-5">
+                            <select class="form-control" name="team_select" ng-model="team_name" ng-change="find_games_and_players()">
+                                    <option value="{{name}}"
+                                            ng-repeat="name in team_names">
+                                        {{name}}
+                                    </option>
+                                </select>
+                        </div>
 
-  <div ng-view></div>
+                        <div class="col-xs-5">
+                            <select class="form-control" name="game_select" ng-model="team_game">
+                                    <option value="{{game}}"
+                                            ng-repeat="game in team_games">
+                                        {{game}}
+                                    </option>
+                                </select>
+                        </div>
 
-  <div>Angular seed app: v<span app-version></span></div>
+                        <div class="col-xs-2" align="right">
+                            <button class="btn btn-primary" ng-click="search()">Search</button>
+                        </div>
 
-  <!-- In production use:
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
-  -->
-  <script src="bower_components/angular/angular.js"></script>
-  <script src="bower_components/angular-route/angular-route.js"></script>
-  <script src="app.js"></script>
-  <script src="view1/view1.js"></script>
-  <script src="view2/view2.js"></script>
-  <script src="components/version/version.js"></script>
-  <script src="components/version/version-directive.js"></script>
-  <script src="components/version/interpolate-filter.js"></script>
+                    </div>
+
+                    <div class="row">
+                        <form class="col-xs-5">
+                            <label>
+                                <input checked="checked" type="radio" ng-model="team" value="2">
+                                    Away
+                                </label>
+                            <label>
+                                    <input type="radio" ng-model="team" value="4">
+                                    Home
+                                </label>
+                        </form>
+                        <form class="col-xs-4">
+                            <label>
+                                    <input checked="checked" type="radio" ng-model="type" value="men">
+                                    Men's
+                                </label>
+                            <label>
+                                    <input type="radio" ng-model="type" value="women">
+                                    Women's
+                                </label>
+                        </form>
+                    </div>
+                    <!--</div>-->
+
+                    <!--<div class="row">-->
+                    <!--&lt;!&ndash;text area of all data&ndash;&gt;-->
+                    <!--<div class="col-xs-12">-->
+                    <!--<textarea class="form-control" id="datatext1" rows="20" cols="70">-->
+                    <!--{{prettyDatas || ""}}-->
+                    <!--</textarea>-->
+                    <!--</div>-->
+                    <!--</div>-->
+
+                    <div class="row" ng-repeat="data in datas">
+                        <textarea class="form-control" id="datatext" rows="20" ng-model="prettyList[data.segment]">
+                            {{prettyList[data.segment]}}
+                        </textarea>
+                    </div>
+
+
+                    <div class="row">
+                        <!--text area of all data-->
+                        <div class="col-xs-2">
+                            <button class="btn btn-warning" ng-click="submit()">Submit</button>
+                        </div>
+                        <h5 class="col-xs-5">Auto Data Status: {{autoDataStatus}}</h5>
+                        <h5 class="col-xs-5">Old Data Status: {{oldDataStatus}}</h5>
+                    </div>
+
+                    <div class="row" style="color:red">
+                        <div class="col-xs-5">
+                            <h5>{{team_name || "Team"}}</h5>
+                        </div>
+                        <div class="col-xs-5">
+                            <h5>{{team_game || "Game"}}</h5>
+                        </div>
+                        <div class="col-xs-2" align="right"><span><button class="btn btn-danger" ng-click="deleteGame()">Delete</button></span></div>
+                    </div>
+                </div>
+                <div class="col-xs-5">
+                    <div class="row">
+                        <div class="col-xs-5">
+                            <label><input type="text" class="form-control" placeholder="Player Name" ng-model="oldPlayer"></label>
+                        </div>
+                        <div class="col-xs-5">
+                            <select class="form-control" name="player_select" ng-model="newPlayer">
+                                <option value="{{player}}"
+                                        ng-repeat="player in team_players">
+                                    {{player}}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-xs-2" align="right">
+                            <button class="btn btn-primary" ng-click="replacePlayer()">Replace</button>
+                        </div>
+                    </div>
+                    <!--table of errors-->
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <table id="errors" class="table table-striped">
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Segment</th>
+                                    <th>Time</th>
+                                </tr>
+                                <tr ng-repeat="error in errors" ng-click="selectError(error)" ng-class="{'info': selectedError == error}">
+                                    <td ng-repeat="value in error">
+                                        {{value}}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Scraper Specific-->
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    <script src="scraper/controller.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="app.js"></script>
+    <script src="scraper/controller.js"></script>
+
+    <!--Angular Seed-->
+    <!--
+      <script src="bower_components/angular/angular.js"></script>
+      <script src="bower_components/angular-route/angular-route.js"></script>
+      <script src="app.js"></script>
+      <script src="view1/view1.js"></script>
+      <script src="view2/view2.js"></script>
+      <script src="components/version/version.js"></script>
+      <script src="components/version/version-directive.js"></script>
+      <script src="components/version/interpolate-filter.js"></script> -->
+
 </body>
+
 </html>
